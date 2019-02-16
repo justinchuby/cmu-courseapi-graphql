@@ -1,16 +1,36 @@
-import { gql } from 'apollo-server-express'
+import { gql, makeExecutableSchema } from "apollo-server-express";
 
 // The GraphQL schema
-export const typeDefs = gql`
+const typeDefs = gql`
+  type Book {
+    title: String
+    author: Author
+  }
+
+  type Author {
+    books: [Book]
+  }
+
   type Query {
-    "A simple type for getting started!"
-    hello: String
+    author: Author
   }
 `
 
 // A map of functions which return data for the schema.
-export const resolvers = {
+const resolvers = {
   Query: {
-    hello: () => 'world'
+    author(parent, args, context, info) {
+      return find(authors, { id: args.id });
+    }
+  },
+  Author: {
+    books(author) {
+      return filter(books, { author: author.name });
+    }
   }
 }
+
+export const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+})
