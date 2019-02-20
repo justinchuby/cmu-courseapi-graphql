@@ -1,7 +1,17 @@
 import { gql, makeExecutableSchema } from 'apollo-server-express'
 
+// Resolver dependency
+import { GraphQLScalarType } from 'graphql'
+import { Kind } from 'graphql/language'
+
 // The GraphQL schema
 const typeDefs = gql`
+  scalar Date
+
+  type MyType {
+    created: Date
+  }
+
   type Course {
     courseId: String!
     desc: String
@@ -55,6 +65,22 @@ const typeDefs = gql`
 
 // A map of functions which return data for the schema.
 const resolvers = {
+  Date: new GraphQLScalarType({
+    name: 'Date',
+    description: 'Date custom scalar type',
+    parseValue(value) {
+      return new Date(value) // value from the client
+    },
+    serialize(value) {
+      return value.getTime() // value sent to the client
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.INT) {
+        return new Date(ast.value) // ast value is always in string format
+      }
+      return null
+    },
+  }),
   Query: {
     author(parent, args, context, info) {
       return find(authors, { id: args.id });
