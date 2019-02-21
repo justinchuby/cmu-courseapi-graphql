@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express'
 import { schema } from './schema'
