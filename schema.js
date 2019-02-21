@@ -5,10 +5,6 @@ import { resolvers } from './resolvers'
 const typeDefs = gql`
   scalar Date
 
-  type MyType {
-    created: Date
-  }
-
   type Course {
     courseId: String!
     desc: String

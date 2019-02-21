@@ -1,5 +1,6 @@
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
+import { Course, Meeting } from './models'
 
 const promisify = query =>
   new Promise((resolve, reject) => {
@@ -29,15 +30,8 @@ export const resolvers = {
       }
       return null
     }
-  })
-  // Query: {
-  //   author(parent, args, context, info) {
-  //     return find(authors, { id: args.id });
-  //   }
-  // },
-  // Author: {
-  //   books(author) {
-  //     return filter(books, { author: author.name });
-  //   }
-  // }
+  }),
+  Query: {
+    courses: (_, args) => promisify(Course.find({}).skip(args.query.offset).limit(args.query.limit))
+  },
 }
