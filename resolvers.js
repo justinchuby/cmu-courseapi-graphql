@@ -1,5 +1,6 @@
+/* eslint-disable no-console */
 import { GraphQLScalarType } from 'graphql'
-import { Kind } from 'graphql/language'
+// import { Kind } from 'graphql/language'
 import { Course, Meeting } from './models'
 
 // promisify found on https://g00glen00b.be/graphql-nodejs-express-apollo/
@@ -31,15 +32,30 @@ const dateScalarType = new GraphQLScalarType({
 // A map of functions which return data for the schema.
 export const resolvers = {
   Date: dateScalarType,
+  Course: {
+    meetings: ({ courseId, semester, year }) => {
+      return promisify(Meeting.find({ courseId, semester, year }))
+    }
+  },
+  Meeting: {
+    course: ({ courseId, semester, year }) => {
+      return promisify(Course.findOne({ courseId, semester, year }))
+    }
+  },
   Query: {
     // courses: (args) => promisify(Course.find({}).skip(args.query.offset).limit(args.query.limit))
-    courses: (obj, args, context, info) => {
-      // TODO: look for arguments and chain query here
-      // TODO: check info to see what's needed
-      // TODO: to get meetings of a course, use $lookup
-      // TODO: OR, see if graph ql can pass result as parameters
-      promisify(Course.find({}))
+    // courses: (root, args, context, info) => {
+    //   // TODO: look for arguments and chain query here
+    //   // TODO: check info to see what's needed
+    //   // TODO: to get meetings of a course, use $lookup
+    //   // TODO: OR, see if graph ql can pass result as parameters
+    //   promisify(Course.find({}))
+    // },
+    course: (root, args, context, info) => {
+      const { courseId, semester, year } = args
+      return promisify(Course.findOne({ courseId, semester, year }))
     }
-
   },
 }
+
+// https://blog.apollographql.com/batching-client-graphql-queries-a685f5bcd41b

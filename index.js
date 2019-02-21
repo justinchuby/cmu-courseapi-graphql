@@ -10,6 +10,8 @@ const DB_NAME = 'courseapi'
 const MONGO_URI = `mongodb+srv://test-a:nebku0-hYpqeq-qagmuh@cluster0-ydk8h.mongodb.net/${DB_NAME}?retryWrites=true`
 
 function connectMongo() {
+  // DEBUG
+  mongoose.set('debug', true)
   mongoose.connect(
     MONGO_URI,
     { useNewUrlParser: true }
