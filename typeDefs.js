@@ -1,5 +1,4 @@
 import { gql } from 'apollo-server-express'
-// import { resolvers } from './resolvers'
 
 // The GraphQL schema
 export const typeDefs = gql`

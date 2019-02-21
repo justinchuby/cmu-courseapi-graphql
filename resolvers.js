@@ -2,6 +2,7 @@ import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 import { Course, Meeting } from './models'
 
+// promisify found on https://g00glen00b.be/graphql-nodejs-express-apollo/
 const promisify = query => new Promise((resolve, reject) => {
   query.exec((err, data) => {
     if (err) reject(err)
