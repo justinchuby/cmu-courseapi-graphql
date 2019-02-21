@@ -11,24 +11,22 @@ const promisify = query => new Promise((resolve, reject) => {
 })
 
 const dateScalarType = new GraphQLScalarType({
+  // https://www.apollographql.com/docs/graphql-tools/scalars.html#Date-as-a-scalar
   name: 'Date',
-  description: 'Date custom scalar type',
+  description: 'The Javascript native Date type.',
   parseValue(value) {
     return new Date(value) // value from the client
   },
   serialize(value) {
-    return value.getTime() // value sent to the client
+    return value.toJSON() // value sent to the client
   },
   parseLiteral(ast) {
-    if (ast.kind === Kind.INT) {
-      return new Date(ast.value) // ast value is always in string format
-    }
-    return null
+    // TODO: Add varification
+    return new Date(ast.value)
   }
 })
 
 // TODO: See https://graphql.org/learn/schema/#union-types
-// TODO: See https://www.apollographql.com/docs/graphql-tools/scalars.html#Date-as-a-scalar
 
 // A map of functions which return data for the schema.
 export const resolvers = {
