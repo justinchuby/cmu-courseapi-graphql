@@ -25,7 +25,8 @@ export const typeDefs = gql`
     courseId: String!
     name: String
     times: [EventTime]
-    instructors: [String]
+    instructors: [Instructor]
+    courses: [Course]
     type: String
     semester: String!
     year: Int!
@@ -44,6 +45,12 @@ export const typeDefs = gql`
   type Requisite {
     reqs: [[String]]
     invert: Boolean
+  }
+
+  type Instructor {
+    name: String!
+    courses: [Course]
+    meetings: [Meeting]
   }
 
   type Query {

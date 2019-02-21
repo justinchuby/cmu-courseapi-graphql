@@ -33,6 +33,13 @@ export const resolvers = {
   Date: dateScalarType,
   Query: {
     // courses: (args) => promisify(Course.find({}).skip(args.query.offset).limit(args.query.limit))
-    courses: () => promisify(Course.find({}))
+    courses: (obj, args, context, info) => {
+      // TODO: look for arguments and chain query here
+      // TODO: check info to see what's needed
+      // TODO: to get meetings of a course, use $lookup
+      // TODO: OR, see if graph ql can pass result as parameters
+      promisify(Course.find({}))
+    }
+
   },
 }
