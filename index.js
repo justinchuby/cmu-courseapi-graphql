@@ -6,16 +6,20 @@ import { resolvers } from './resolvers'
 import mongoose from 'mongoose'
 
 const PORT = 4000
+const DB_NAME = 'courseapi'
 
 function connectMongo() {
-  mongoose.connect('mongodb+srv://test-a:nebku0-hYpqeq-qagmuh@cluster0-ydk8h.mongodb.net/courseapi?retryWrites=true',  {useNewUrlParser: true})
+  mongoose.connect(
+    `mongodb+srv://test-a:nebku0-hYpqeq-qagmuh@cluster0-ydk8h.mongodb.net/${DB_NAME}?retryWrites=true`,
+    { useNewUrlParser: true }
+  )
 }
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: async () => ({
-    mongo: await connectMongo(),
+    mongo: await connectMongo()
   })
 })
 
