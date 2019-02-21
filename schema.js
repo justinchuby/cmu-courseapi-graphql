@@ -1,8 +1,8 @@
-import { gql, makeExecutableSchema } from 'apollo-server-express'
-import { resolvers } from './resolvers'
+import { gql } from 'apollo-server-express'
+// import { resolvers } from './resolvers'
 
 // The GraphQL schema
-const typeDefs = gql`
+export const typeDefs = gql`
   scalar Date
 
   type Course {
@@ -11,7 +11,6 @@ const typeDefs = gql`
     name: String
     notes: String
     department: String
-    meetings: [Meeting]
     coreqs: String
     coreqsObj: Requisite
     prereqs: String
@@ -48,11 +47,6 @@ const typeDefs = gql`
   }
 
   type Query {
-    course(courseId: String): Course
+    courses: [Course]
   }
 `
-
-export const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers
-})

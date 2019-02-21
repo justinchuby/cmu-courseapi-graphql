@@ -1,14 +1,24 @@
 /* eslint-disable no-console */
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express'
-import { schema } from './schema'
+import { typeDefs } from './schema'
+import { resolvers } from './resolvers'
 import mongoose from 'mongoose'
 
 const PORT = 4000
 
-mongoose.connect('mongodb+srv://test-a:nebku0-hYpqeq-qagmuh@cluster0-ydk8h.mongodb.net/test?retryWrites=true')
+function connectMongo() {
+  mongoose.connect('mongodb+srv://test-a:nebku0-hYpqeq-qagmuh@cluster0-ydk8h.mongodb.net/courseapi?retryWrites=true',  {useNewUrlParser: true})
+}
 
-const server = new ApolloServer(schema)
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: async () => ({
+    mongo: await connectMongo(),
+  })
+})
+
 const app = express()
 
 server.applyMiddleware({ app }) // app is from an existing express app

@@ -1,15 +1,13 @@
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 import { Course, Meeting } from './models'
-import { dateScalarType } from './schema'
 
 const promisify = query => new Promise((resolve, reject) => {
-    query.exec((err, data) => {
-      if (err) reject(err)
-      else resolve(data)
-    })
-  }
-)
+  query.exec((err, data) => {
+    if (err) reject(err)
+    else resolve(data)
+  })
+})
 
 const dateScalarType = new GraphQLScalarType({
   name: 'Date',
@@ -35,6 +33,7 @@ const dateScalarType = new GraphQLScalarType({
 export const resolvers = {
   Date: dateScalarType,
   Query: {
-    courses: (_, args) => promisify(Course.find({}).skip(args.query.offset).limit(args.query.limit))
+    // courses: (args) => promisify(Course.find({}).skip(args.query.offset).limit(args.query.limit))
+    courses: () => promisify(Course.find({}))
   },
 }
