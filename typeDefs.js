@@ -10,12 +10,13 @@ export const typeDefs = gql`
     name: String
     notes: String
     department: String
+    meetings: [Meeting]
     coreqs: String
     coreqsObj: Requisite
     prereqs: String
     prereqsObj: Requisite
-    semester: String
-    year: Int
+    semester: String!
+    year: Int!
     units: Int
     rundate: Date
   }
@@ -26,8 +27,8 @@ export const typeDefs = gql`
     times: [EventTime]
     instructors: [String]
     type: String
-    semester: String
-    year: Int
+    semester: String!
+    year: Int!
     rundate: Date
   }
 
@@ -47,5 +48,6 @@ export const typeDefs = gql`
 
   type Query {
     courses: [Course]
+
   }
 `
