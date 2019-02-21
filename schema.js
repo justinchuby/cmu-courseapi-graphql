@@ -56,7 +56,7 @@ const typeDefs = gql`
 
   type Query {
     course(courseId: String): Course
-
+    
   }
 `
 
@@ -81,16 +81,16 @@ const resolvers = {
       return null
     },
   }),
-  Query: {
-    author(parent, args, context, info) {
-      return find(authors, { id: args.id });
-    }
-  },
-  Author: {
-    books(author) {
-      return filter(books, { author: author.name });
-    }
-  }
+  // Query: {
+  //   author(parent, args, context, info) {
+  //     return find(authors, { id: args.id });
+  //   }
+  // },
+  // Author: {
+  //   books(author) {
+  //     return filter(books, { author: author.name });
+  //   }
+  // }
 }
 
 export const schema = makeExecutableSchema({
