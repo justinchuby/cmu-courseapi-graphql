@@ -2,14 +2,19 @@
 import { GraphQLScalarType } from 'graphql'
 // import { Kind } from 'graphql/language'
 import { Course, Meeting } from './models'
+import {
+  buildMongoConditionsFromFilters,
+  FILTER_CONDITION_TYPE
+} from '@entria/graphql-mongo-helpers'
 
 // promisify found on https://g00glen00b.be/graphql-nodejs-express-apollo/
-const promisify = query => new Promise((resolve, reject) => {
-  query.exec((err, data) => {
-    if (err) reject(err)
-    else resolve(data)
-  })
-})
+// const promisify = query =>
+//   new Promise((resolve, reject) => {
+//     query.exec((err, data) => {
+//       if (err) reject(err)
+//       else resolve(data)
+//     })
+//   })
 
 const dateScalarType = new GraphQLScalarType({
   // https://www.apollographql.com/docs/graphql-tools/scalars.html#Date-as-a-scalar
@@ -27,41 +32,110 @@ const dateScalarType = new GraphQLScalarType({
   }
 })
 
-// TODO: See https://graphql.org/learn/schema/#union-types
+const courseFilterMapping = {
+  text: {
+    type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
+    format: val => {
+      return { $text: { $search: val } }
+    }
+  },
+  courseId: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    format: val => new RegExp(val)
+  },
+  coreq: {
+    type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
+    format: val => {
+      return {
+        'coreqsObj.reqs': { $elemMatch: { $elemMatch: { $in: [val] } } }
+      }
+    }
+  },
+  prereq: {
+    type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
+    format: val => {
+      return {
+        'prereqsObj.reqs': { $elemMatch: { $elemMatch: { $in: [val] } } }
+      }
+    }
+  }
+}
+
+const meetingFilterMapping = {
+  instructor: {
+    type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
+    format: val => {
+      const names = val.split(' ')
+      const regex = names.map((e) => new RegExp(e, 'i'))
+      return {
+        $and: [
+          { $text: { $search: val } },
+          { 'instructor': { $in: { regex }}}
+        ]
+      }
+    }
+  },
+  courseId: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    format: val => new RegExp(val)
+  },
+  day: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    format: val => {
+      return { $in: { val } }
+    }
+  }
+}
 
 // A map of functions which return data for the schema.
 export const resolvers = {
   Date: dateScalarType,
   Course: {
     meetings: ({ courseId, semester, year }) => {
-      return promisify(Meeting.find({ courseId, semester, year }))
+      return Meeting.find({ courseId, semester, year }).exec()
     }
   },
   Meeting: {
     course: ({ courseId, semester, year }) => {
-      return promisify(Course.findOne({ courseId, semester, year }))
+      return Course.findOne({ courseId, semester, year }).exec()
     }
   },
   Query: {
-    // courses: (args) => promisify(Course.find({}).skip(args.query.offset).limit(args.query.limit))
-    // courses: (root, args, context, info) => {
-    //   // TODO: look for arguments and chain query here
-    //   // TODO: check info to see what's needed
-    //   // TODO: to get meetings of a course, use $lookup
-    //   // TODO: OR, see if graph ql can pass result as parameters
-    //   promisify(Course.find({}))
-    // },
-    course: (root, args, context, info) => {
+    course: (root, args) => {
       const { courseId, semester, year } = args
-      return promisify(Course.findOne({ courseId, semester, year }))
+      return Course.findOne({ courseId, semester, year }).exec()
     },
-    courses: (root, args, context, info) => {
-      const {
+    courses: (root, args) => {
+      const { filter, offset, limit } = args
+      const filterResult = buildMongoConditionsFromFilters(
         filter,
-
-      } = args
+        courseFilterMapping
+      )
+      const query = Course.find(filterResult.conditions)
+      if (offset) {
+        query.skip(offset)
+      }
+      if (limit) {
+        query.limit(offset)
+      }
+      return query.exec()
+    },
+    meetings: (root, args) => {
+      const { filter, offset, limit } = args
+      const filterResult = buildMongoConditionsFromFilters(
+        filter,
+        meetingFilterMapping
+      )
+      const query = Meeting.find(filterResult.conditions)
+      if (offset) {
+        query.skip(offset)
+      }
+      if (limit) {
+        query.limit(offset)
+      }
+      return query.exec()
     }
-  },
+  }
 }
 
 // https://blog.apollographql.com/batching-client-graphql-queries-a685f5bcd41b

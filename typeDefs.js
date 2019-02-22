@@ -54,8 +54,10 @@ export const typeDefs = gql`
     meetings: [Meeting!]
     coreqs: String
     coreqsObj: Requisite
+    coreqCourses: [Course!]
     prereqs: String
     prereqsObj: Requisite
+    prereqCourses: [Course!]
     semester: String!
     year: Int!
     units: Int
@@ -90,5 +92,7 @@ export const typeDefs = gql`
 
   type Query {
     course(courseId: String!, semester: String!, year: Int!): Course
+    courses(filter: CourseFilterInput!, offset: Int, limit: Int): [Course!]
+    meetings(filter: CourseFilterInput!, offset: Int, limit: Int): [Meeting!]
   }
 `
