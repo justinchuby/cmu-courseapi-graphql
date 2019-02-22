@@ -4,6 +4,47 @@ import { gql } from 'apollo-server-express'
 export const typeDefs = gql`
   scalar Date
 
+  input CourseFilterInput {
+    text: String
+    courseId: String
+    department: String
+    semester: String
+    year: Int
+    year_gt: Int
+    year_gte: Int
+    year_lt: Int
+    year_lte: Int
+    coreq: String
+    prereq: String
+  }
+
+  input MeetingFilterInput {
+    courseId: String
+    name: String
+    semester: String
+    year: Int
+    year_gt: Int
+    year_gte: Int
+    year_lt: Int
+    year_lte: Int
+    day: Int
+    begin: Int
+    begin_gt: Int
+    begin_gte: Int
+    begin_lt: Int
+    begin_lte: Int
+    end: Int
+    end_gt: Int
+    end_gte: Int
+    end_lt: Int
+    end_lte: Int
+    building: String
+    room: String
+    location: String
+    instructor: String
+    type: String
+  }
+
   type Course {
     courseId: String!
     desc: String

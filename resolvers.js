@@ -54,8 +54,24 @@ export const resolvers = {
     course: (root, args, context, info) => {
       const { courseId, semester, year } = args
       return promisify(Course.findOne({ courseId, semester, year }))
+    },
+    courses: (root, args, context, info) => {
+      const {
+        filter,
+
+      } = args
     }
   },
 }
 
 // https://blog.apollographql.com/batching-client-graphql-queries-a685f5bcd41b
+// $and:[{
+//   $text: {
+//     $search: "Moss Carrie-Anne"
+// }},{
+// cast: {
+//     $elemMatch: {$regex: /Moss/, $regex: /Carrie-Anne/}}
+// }]}
+// );
+
+// {"prereqsObj.reqs": {$elemMatch:{$elemMatch:{$in: ["15-112"]}}}}
