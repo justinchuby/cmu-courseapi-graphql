@@ -61,7 +61,7 @@ const meetingFilterMapping = {
       const names = val.split(' ')
       const regexes = names.map(e => new RegExp(e, 'i'))
       return {
-        $and: [{ $text: { $search: val } }, { instructor: { $in: regexes } }]
+        $and: [{ $text: { $search: val } }, { 'instructors': { $all: regexes } }]
       }
     }
   },
