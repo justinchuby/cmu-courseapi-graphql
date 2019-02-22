@@ -1,5 +1,4 @@
 import { GraphQLScalarType } from 'graphql'
-// import { Kind } from 'graphql/language'
 import { Course, Meeting } from './models'
 import {
   buildMongoConditionsFromFilters,
@@ -61,7 +60,7 @@ const meetingFilterMapping = {
       const names = val.split(' ')
       const regexes = names.map(e => new RegExp(e, 'i'))
       return {
-        $and: [{ $text: { $search: val } }, { 'instructors': { $all: regexes } }]
+        $and: [{ $text: { $search: val } }, { instructors: { $all: regexes } }]
       }
     }
   },
@@ -98,6 +97,24 @@ const meetingFilterMapping = {
   }
 }
 
+// TODO: data verification
+// TODO: batch loader
+
+export function reqQuery(collection, reqsList, semester, year) {
+  return reqsList.map(reqGroup => {
+    return reqGroup.map(req => {
+      return collection
+        .findOne({})
+        .or([
+          { courseId: req, semester, year },
+          { courseId: req, year },
+          { courseId: req }
+        ])
+        .exec()
+    })
+  })
+}
+
 // A map of functions which return data for the schema.
 export const resolvers = {
   Date: dateScalarType,
@@ -105,9 +122,18 @@ export const resolvers = {
     meetings: ({ courseId, semester, year }) => {
       return Meeting.find({ courseId, semester, year }).exec()
     },
-    coreqCourses: ({ coreqsObj }) => {
-      if (coreqsObj) {
-        // TODO: map each course to a course object
+    coreqCourses: ({ coreqsObj, semester, year }) => {
+      const reqs = coreqsObj.reqs
+      if (reqs) {
+        return reqQuery(Course, reqs, semester, year)
+      }
+      return null
+    },
+    prereqCourses: ({ prereqsObj, semester, year }) => {
+      const reqs = prereqsObj.reqs
+      if (reqs) {
+        console.log(reqs)
+        return reqQuery(Course, reqs, semester, year)
       }
       return null
     }
@@ -132,13 +158,16 @@ export const resolvers = {
       let query
       if (filterResult.conditions.hasOwnProperty('$text')) {
         // Sort result based on score
-        query = Course.find(
-          filterResult.conditions, { score: { $meta: 'textScore' } })
-          .sort( { score: { $meta: 'textScore' } } )
+        query = Course.find(filterResult.conditions, {
+          score: { $meta: 'textScore' }
+        })
+          .sort({ score: { $meta: 'textScore' } })
           .skip(offset)
           .limit(limit)
       } else {
-        query = Course.find(filterResult.conditions).skip(offset).limit(limit)
+        query = Course.find(filterResult.conditions)
+          .skip(offset)
+          .limit(limit)
       }
       return query.exec()
     },
@@ -149,20 +178,10 @@ export const resolvers = {
         filter,
         meetingFilterMapping
       )
-      const query = Meeting.find(filterResult.conditions).skip(offset).limit(limit)
+      const query = Meeting.find(filterResult.conditions)
+        .skip(offset)
+        .limit(limit)
       return query.exec()
     }
   }
 }
-
-// https://blog.apollographql.com/batching-client-graphql-queries-a685f5bcd41b
-// $and:[{
-//   $text: {
-//     $search: "Moss Carrie-Anne"
-// }},{
-// cast: {
-//     $elemMatch: {$regex: /Moss/, $regex: /Carrie-Anne/}}
-// }]}
-// );
-
-// {"prereqsObj.reqs": {$elemMatch:{$elemMatch:{$in: ["15-112"]}}}}
