@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { GraphQLScalarType } from 'graphql'
 // import { Kind } from 'graphql/language'
 import { Course, Meeting } from './models'
@@ -6,15 +5,7 @@ import {
   buildMongoConditionsFromFilters,
   FILTER_CONDITION_TYPE
 } from '@entria/graphql-mongo-helpers'
-
-// promisify found on https://g00glen00b.be/graphql-nodejs-express-apollo/
-// const promisify = query =>
-//   new Promise((resolve, reject) => {
-//     query.exec((err, data) => {
-//       if (err) reject(err)
-//       else resolve(data)
-//     })
-//   })
+import { stringToRegexQuery } from './mongoHelpers'
 
 const dateScalarType = new GraphQLScalarType({
   // https://www.apollographql.com/docs/graphql-tools/scalars.html#Date-as-a-scalar
@@ -41,7 +32,7 @@ const courseFilterMapping = {
   },
   courseId: {
     type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
-    format: val => new RegExp(val)
+    format: stringToRegexQuery
   },
   coreq: {
     type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
@@ -66,12 +57,9 @@ const meetingFilterMapping = {
     type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
     format: val => {
       const names = val.split(' ')
-      const regex = names.map((e) => new RegExp(e, 'i'))
+      const regex = names.map(e => new RegExp(e, 'i'))
       return {
-        $and: [
-          { $text: { $search: val } },
-          { 'instructor': { $in: { regex }}}
-        ]
+        $and: [{ $text: { $search: val } }, { instructor: { $in: { regex } } }]
       }
     }
   },
@@ -108,16 +96,11 @@ export const resolvers = {
     courses: (root, args) => {
       const { filter, offset, limit } = args
       const filterResult = buildMongoConditionsFromFilters(
+        null,
         filter,
         courseFilterMapping
       )
-      const query = Course.find(filterResult.conditions)
-      if (offset) {
-        query.skip(offset)
-      }
-      if (limit) {
-        query.limit(offset)
-      }
+      const query = Course.find(filterResult.conditions).skip(offset).limit(limit)
       return query.exec()
     },
     meetings: (root, args) => {
@@ -126,13 +109,7 @@ export const resolvers = {
         filter,
         meetingFilterMapping
       )
-      const query = Meeting.find(filterResult.conditions)
-      if (offset) {
-        query.skip(offset)
-      }
-      if (limit) {
-        query.limit(offset)
-      }
+      const query = Meeting.find(filterResult.conditions).skip(offset).limit(limit)
       return query.exec()
     }
   }
