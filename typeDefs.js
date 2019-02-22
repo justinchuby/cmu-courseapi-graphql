@@ -93,6 +93,6 @@ export const typeDefs = gql`
   type Query {
     course(courseId: String!, semester: String!, year: Int!): Course
     courses(filter: CourseFilterInput!, offset: Int, limit: Int): [Course!]
-    meetings(filter: CourseFilterInput!, offset: Int, limit: Int): [Meeting!]
+    meetings(filter: MeetingFilterInput!, offset: Int, limit: Int): [Meeting!]
   }
 `

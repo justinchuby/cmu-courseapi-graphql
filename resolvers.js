@@ -59,9 +59,9 @@ const meetingFilterMapping = {
     type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
     format: val => {
       const names = val.split(' ')
-      const regex = names.map(e => new RegExp(e, 'i'))
+      const regexes = names.map(e => new RegExp(e, 'i'))
       return {
-        $and: [{ $text: { $search: val } }, { instructor: { $in: { regex } } }]
+        $and: [{ $text: { $search: val } }, { instructor: { $in: regexes } }]
       }
     }
   },
@@ -71,9 +71,30 @@ const meetingFilterMapping = {
   },
   day: {
     type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    key: 'times.days',
     format: val => {
-      return { $in: { val } }
+      return { $in: [val] }
     }
+  },
+  begin: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    key: 'times.begin'
+  },
+  end: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    key: 'times.end'
+  },
+  building: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    key: 'times.building'
+  },
+  room: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    key: 'times.room'
+  },
+  location: {
+    type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
+    key: 'times.location'
   }
 }
 
@@ -83,6 +104,12 @@ export const resolvers = {
   Course: {
     meetings: ({ courseId, semester, year }) => {
       return Meeting.find({ courseId, semester, year }).exec()
+    },
+    coreqCourses: ({ coreqsObj }) => {
+      if (coreqsObj) {
+        // TODO: map each course to a course object
+      }
+      return null
     }
   },
   Meeting: {
@@ -108,6 +135,7 @@ export const resolvers = {
     meetings: (root, args) => {
       const { filter, offset, limit } = args
       const filterResult = buildMongoConditionsFromFilters(
+        null,
         filter,
         meetingFilterMapping
       )
