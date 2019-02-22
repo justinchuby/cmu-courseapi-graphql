@@ -37,16 +37,18 @@ const courseFilterMapping = {
   coreq: {
     type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
     format: val => {
+      const regex = new RegExp(val)
       return {
-        'coreqsObj.reqs': { $elemMatch: { $elemMatch: { $in: [val] } } }
+        'coreqsObj.reqs': { $elemMatch: { $elemMatch: { $in: [regex] } } }
       }
     }
   },
   prereq: {
     type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
     format: val => {
+      const regex = new RegExp(val)
       return {
-        'prereqsObj.reqs': { $elemMatch: { $elemMatch: { $in: [val] } } }
+        'prereqsObj.reqs': { $elemMatch: { $elemMatch: { $in: [regex] } } }
       }
     }
   }
@@ -65,7 +67,7 @@ const meetingFilterMapping = {
   },
   courseId: {
     type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
-    format: val => new RegExp(val)
+    format: stringToRegexQuery
   },
   day: {
     type: FILTER_CONDITION_TYPE.MATCH_1_TO_1,
