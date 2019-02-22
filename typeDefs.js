@@ -53,11 +53,11 @@ export const typeDefs = gql`
     department: String
     meetings: [Meeting!]
     coreqs: String
-    coreqsObj: Requisite
-    coreqCourses: [Course!]
+    coreqsObj: Requisite!
+    coreqCourses: [[Course]]
     prereqs: String
     prereqsObj: Requisite
-    prereqCourses: [Course!]
+    prereqCourses: [[Course]]
     semester: String!
     year: Int!
     units: Int

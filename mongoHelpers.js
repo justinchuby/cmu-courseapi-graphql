@@ -1,3 +1,3 @@
 export function stringToRegexQuery(val) {
-  return {$regex: new RegExp(val)}
+  return { $regex: new RegExp(val) }
 }
