@@ -129,7 +129,17 @@ export const resolvers = {
         filter,
         courseFilterMapping
       )
-      const query = Course.find(filterResult.conditions).skip(offset).limit(limit)
+      let query
+      if (filterResult.conditions.hasOwnProperty('$text')) {
+        // Sort result based on score
+        query = Course.find(
+          filterResult.conditions, { score: { $meta: 'textScore' } })
+          .sort( { score: { $meta: 'textScore' } } )
+          .skip(offset)
+          .limit(limit)
+      } else {
+        query = Course.find(filterResult.conditions).skip(offset).limit(limit)
+      }
       return query.exec()
     },
     meetings: (root, args) => {
