@@ -6,6 +6,9 @@ import {
 } from '@entria/graphql-mongo-helpers'
 import { stringToRegexQuery } from './mongoHelpers'
 
+// TODO: put this elsewhere
+const CACHE_TTL = 60
+
 const dateScalarType = new GraphQLScalarType({
   // https://www.apollographql.com/docs/graphql-tools/scalars.html#Date-as-a-scalar
   name: 'Date',
@@ -17,11 +20,11 @@ const dateScalarType = new GraphQLScalarType({
     return value.toJSON() // value sent to the client
   },
   parseLiteral(ast) {
-    // TODO: Add varification
     return new Date(ast.value)
   }
 })
 
+// Mappings for translating graphQL input to MongoDB queries
 const courseFilterMapping = {
   text: {
     type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
@@ -98,18 +101,23 @@ const meetingFilterMapping = {
 }
 
 // TODO: data verification
-// TODO: batch loader
 
-export function reqQuery(collection, reqsList, semester, year) {
+function reqQuery(collection, reqsList, semester, year) {
   return reqsList.map(reqGroup => {
-    return reqGroup.map(req => {
+    return reqGroup.map(async req => {
+      const result = await collection
+        .findOne({ courseId: req, semester, year })
+        .lean()
+        .cache(CACHE_TTL)
+        .exec()
+      if (result) {
+        return result
+      }
       return collection
-        .findOne({})
-        .or([
-          { courseId: req, semester, year },
-          { courseId: req, year },
-          { courseId: req }
-        ])
+        .findOne({ courseId: req })
+        .sort({ year: -1 })
+        .lean()
+        .cache(CACHE_TTL)
         .exec()
     })
   })
@@ -120,7 +128,10 @@ export const resolvers = {
   Date: dateScalarType,
   Course: {
     meetings: ({ courseId, semester, year }) => {
-      return Meeting.find({ courseId, semester, year }).exec()
+      return Meeting.find({ courseId, semester, year })
+        .lean()
+        .cache(CACHE_TTL)
+        .exec()
     },
     coreqCourses: ({ coreqsObj, semester, year }) => {
       const reqs = coreqsObj.reqs
@@ -132,7 +143,6 @@ export const resolvers = {
     prereqCourses: ({ prereqsObj, semester, year }) => {
       const reqs = prereqsObj.reqs
       if (reqs) {
-        console.log(reqs)
         return reqQuery(Course, reqs, semester, year)
       }
       return null
@@ -140,13 +150,19 @@ export const resolvers = {
   },
   Meeting: {
     course: ({ courseId, semester, year }) => {
-      return Course.findOne({ courseId, semester, year }).exec()
+      return Course.findOne({ courseId, semester, year })
+        .lean()
+        .cache(CACHE_TTL)
+        .exec()
     }
   },
   Query: {
     course: (root, args) => {
       const { courseId, semester, year } = args
-      return Course.findOne({ courseId, semester, year }).exec()
+      return Course.findOne({ courseId, semester, year })
+        .lean()
+        .cache(CACHE_TTL)
+        .exec()
     },
     courses: (root, args) => {
       const { filter, offset, limit } = args
@@ -157,6 +173,7 @@ export const resolvers = {
       )
       let query
       if (filterResult.conditions.hasOwnProperty('$text')) {
+        // If the filter contains a text search query
         // Sort result based on score
         query = Course.find(filterResult.conditions, {
           score: { $meta: 'textScore' }
@@ -165,11 +182,13 @@ export const resolvers = {
           .skip(offset)
           .limit(limit)
       } else {
+        // No text search query
         query = Course.find(filterResult.conditions)
+          .cache(CACHE_TTL)
           .skip(offset)
           .limit(limit)
       }
-      return query.exec()
+      return query.lean().exec()
     },
     meetings: (root, args) => {
       const { filter, offset, limit } = args
@@ -178,10 +197,12 @@ export const resolvers = {
         filter,
         meetingFilterMapping
       )
-      const query = Meeting.find(filterResult.conditions)
+      return Meeting.find(filterResult.conditions)
         .skip(offset)
         .limit(limit)
-      return query.exec()
+        .lean()
+        .cache(CACHE_TTL)
+        .exec()
     }
   }
 }

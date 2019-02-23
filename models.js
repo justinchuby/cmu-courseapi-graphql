@@ -31,14 +31,16 @@ export const Meeting = mongoose.model(
   {
     courseId: String,
     name: String,
-    times: [{
-      days: [Number],
-      begin: Number,
-      end: Number,
-      building: String,
-      room: String,
-      location: String
-    }],
+    times: [
+      {
+        days: [Number],
+        begin: Number,
+        end: Number,
+        building: String,
+        room: String,
+        location: String
+      }
+    ],
     instructors: [String],
     type: String,
     semester: String,
