@@ -6,6 +6,9 @@ import {
 } from '@entria/graphql-mongo-helpers'
 import { stringToRegexQuery } from './mongoHelpers'
 
+// TODO: put this elsewhere
+const CACHE_TTL = 60
+
 const dateScalarType = new GraphQLScalarType({
   // https://www.apollographql.com/docs/graphql-tools/scalars.html#Date-as-a-scalar
   name: 'Date',
@@ -17,7 +20,6 @@ const dateScalarType = new GraphQLScalarType({
     return value.toJSON() // value sent to the client
   },
   parseLiteral(ast) {
-    // TODO: Add varification
     return new Date(ast.value)
   }
 })
@@ -106,12 +108,14 @@ export function reqQuery(collection, reqsList, semester, year) {
     return reqGroup.map(req => {
       return collection
         .findOne({})
+        // TODO: fix this or query because or doesn't guarantee execution ordering 
         .or([
           { courseId: req, semester, year },
           { courseId: req, year },
           { courseId: req }
         ])
         .lean()
+        .cache(CACHE_TTL)
         .exec()
     })
   })
@@ -124,6 +128,7 @@ export const resolvers = {
     meetings: ({ courseId, semester, year }) => {
       return Meeting.find({ courseId, semester, year })
         .lean()
+        .cache(CACHE_TTL)
         .exec()
     },
     coreqCourses: ({ coreqsObj, semester, year }) => {
@@ -145,6 +150,7 @@ export const resolvers = {
     course: ({ courseId, semester, year }) => {
       return Course.findOne({ courseId, semester, year })
         .lean()
+        .cache(CACHE_TTL)
         .exec()
     }
   },
@@ -153,6 +159,7 @@ export const resolvers = {
       const { courseId, semester, year } = args
       return Course.findOne({ courseId, semester, year })
         .lean()
+        .cache(CACHE_TTL)
         .exec()
     },
     courses: (root, args) => {
@@ -176,7 +183,7 @@ export const resolvers = {
           .skip(offset)
           .limit(limit)
       }
-      return query.lean().exec()
+      return query.lean().cache(CACHE_TTL).exec()
     },
     meetings: (root, args) => {
       const { filter, offset, limit } = args
@@ -189,6 +196,7 @@ export const resolvers = {
         .skip(offset)
         .limit(limit)
         .lean()
+        .cache(CACHE_TTL)
         .exec()
     }
   }

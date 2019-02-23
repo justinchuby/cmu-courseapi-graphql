@@ -4,6 +4,7 @@ import { ApolloServer } from 'apollo-server-express'
 import { typeDefs } from './typeDefs'
 import { resolvers } from './resolvers'
 import mongoose from 'mongoose'
+import cachegoose from 'cachegoose'
 
 const PORT = 4000
 const DB_NAME = 'courseapi'
@@ -13,6 +14,8 @@ function connectMongo() {
   // DEBUG
   mongoose.set('debug', true)
   mongoose.connect(MONGO_URI, { useNewUrlParser: true })
+
+  cachegoose(mongoose)
 }
 
 const server = new ApolloServer({
