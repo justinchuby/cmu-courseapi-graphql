@@ -23,6 +23,10 @@ module.exports = {
         "semi": [
             "error",
             "never"
+        ],
+        "eqeqeq": [
+            "error",
+            "smart"
         ]
     },
     "parserOptions": {
