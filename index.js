@@ -12,10 +12,7 @@ const MONGO_URI = `mongodb+srv://test-a:nebku0-hYpqeq-qagmuh@cluster0-ydk8h.mong
 function connectMongo() {
   // DEBUG
   mongoose.set('debug', true)
-  mongoose.connect(
-    MONGO_URI,
-    { useNewUrlParser: true }
-  )
+  mongoose.connect(MONGO_URI, { useNewUrlParser: true })
 }
 
 const server = new ApolloServer({
@@ -23,7 +20,12 @@ const server = new ApolloServer({
   resolvers,
   context: async () => ({
     mongo: await connectMongo()
-  })
+  }),
+  cacheControl: {
+    defaultMaxAge: 240
+  },
+  introspection: true,
+  playground: true,
 })
 
 const app = express()
@@ -31,5 +33,7 @@ const app = express()
 server.applyMiddleware({ app }) // app is from an existing express app
 
 app.listen({ port: PORT }, () =>
-  console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`)
+  console.log(
+    `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
+  )
 )
