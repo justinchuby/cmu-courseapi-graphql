@@ -9,7 +9,7 @@ module.exports = {
     },
     "rules": {
         "indent": [
-            "error",
+            "warn",
             2
         ],
         "linebreak-style": [
@@ -17,7 +17,7 @@ module.exports = {
             "unix"
         ],
         "quotes": [
-            "error",
+            "warn",
             "single"
         ],
         "semi": [
@@ -26,6 +26,7 @@ module.exports = {
         ]
     },
     "parserOptions": {
-        "ecmaVersion": 2017
+        "ecmaVersion": 2018,
+        "sourceType": "module"
     }
 };

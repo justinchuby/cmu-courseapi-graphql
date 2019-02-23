@@ -188,9 +188,7 @@ export const resolvers = {
           .skip(offset)
           .limit(limit)
       }
-      return query
-        .lean()
-        .exec()
+      return query.lean().exec()
     },
     meetings: (root, args) => {
       const { filter, offset, limit } = args
