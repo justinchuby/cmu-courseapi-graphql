@@ -1,1 +1,1 @@
-web: node standalone.js
+web: node dist/app.js
