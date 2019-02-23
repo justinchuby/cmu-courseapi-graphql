@@ -1,8 +1,8 @@
 {
-  "name": "cmu-courseapi-mongodb-graphql",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@justinchuby/cmu-courseapi-graphql",
+  "version": "0.0.1",
+  "description": "Course API for CMU",
+  "main": "dist/index.js",
   "scripts": {
     "start": "nodemon --exec babel-node src/app.js",
     "clean": "rm -rf dist && mkdir dist",
@@ -17,7 +17,7 @@
     "url": "git+https://github.com/justinchuby/cmu-courseapi-mongodb-graphql.git"
   },
   "keywords": [],
-  "author": "justinchuby",
+  "author": "Justin Chu",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/justinchuby/cmu-courseapi-mongodb-graphql/issues"
