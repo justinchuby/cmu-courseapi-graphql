@@ -101,19 +101,21 @@ const meetingFilterMapping = {
 }
 
 // TODO: data verification
-// TODO: batch loader
 
-export function reqQuery(collection, reqsList, semester, year) {
+function reqQuery(collection, reqsList, semester, year) {
   return reqsList.map(reqGroup => {
-    return reqGroup.map(req => {
+    return reqGroup.map(async req => {
+      const result = await collection
+        .findOne({ courseId: req, semester, year })
+        .lean()
+        .cache(CACHE_TTL)
+        .exec()
+      if (result) {
+        return result
+      }
       return collection
-        .findOne({})
-        // TODO: fix this or query because or doesn't guarantee execution ordering 
-        .or([
-          { courseId: req, semester, year },
-          { courseId: req, year },
-          { courseId: req }
-        ])
+        .findOne({ courseId: req })
+        .sort({ year: -1 })
         .lean()
         .cache(CACHE_TTL)
         .exec()
@@ -171,6 +173,7 @@ export const resolvers = {
       )
       let query
       if (filterResult.conditions.hasOwnProperty('$text')) {
+        // If the filter contains a text search query
         // Sort result based on score
         query = Course.find(filterResult.conditions, {
           score: { $meta: 'textScore' }
@@ -179,11 +182,15 @@ export const resolvers = {
           .skip(offset)
           .limit(limit)
       } else {
+        // No text search query
         query = Course.find(filterResult.conditions)
+          .cache(CACHE_TTL)
           .skip(offset)
           .limit(limit)
       }
-      return query.lean().cache(CACHE_TTL).exec()
+      return query
+        .lean()
+        .exec()
     },
     meetings: (root, args) => {
       const { filter, offset, limit } = args
