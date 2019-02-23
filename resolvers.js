@@ -22,6 +22,7 @@ const dateScalarType = new GraphQLScalarType({
   }
 })
 
+// Mappings for translating graphQL input to MongoDB queries
 const courseFilterMapping = {
   text: {
     type: FILTER_CONDITION_TYPE.CUSTOM_CONDITION,
@@ -110,6 +111,7 @@ export function reqQuery(collection, reqsList, semester, year) {
           { courseId: req, year },
           { courseId: req }
         ])
+        .lean()
         .exec()
     })
   })
@@ -120,7 +122,9 @@ export const resolvers = {
   Date: dateScalarType,
   Course: {
     meetings: ({ courseId, semester, year }) => {
-      return Meeting.find({ courseId, semester, year }).exec()
+      return Meeting.find({ courseId, semester, year })
+        .lean()
+        .exec()
     },
     coreqCourses: ({ coreqsObj, semester, year }) => {
       const reqs = coreqsObj.reqs
@@ -132,7 +136,6 @@ export const resolvers = {
     prereqCourses: ({ prereqsObj, semester, year }) => {
       const reqs = prereqsObj.reqs
       if (reqs) {
-        console.log(reqs)
         return reqQuery(Course, reqs, semester, year)
       }
       return null
@@ -140,13 +143,17 @@ export const resolvers = {
   },
   Meeting: {
     course: ({ courseId, semester, year }) => {
-      return Course.findOne({ courseId, semester, year }).exec()
+      return Course.findOne({ courseId, semester, year })
+        .lean()
+        .exec()
     }
   },
   Query: {
     course: (root, args) => {
       const { courseId, semester, year } = args
-      return Course.findOne({ courseId, semester, year }).exec()
+      return Course.findOne({ courseId, semester, year })
+        .lean()
+        .exec()
     },
     courses: (root, args) => {
       const { filter, offset, limit } = args
@@ -169,7 +176,7 @@ export const resolvers = {
           .skip(offset)
           .limit(limit)
       }
-      return query.exec()
+      return query.lean().exec()
     },
     meetings: (root, args) => {
       const { filter, offset, limit } = args
@@ -178,10 +185,11 @@ export const resolvers = {
         filter,
         meetingFilterMapping
       )
-      const query = Meeting.find(filterResult.conditions)
+      return Meeting.find(filterResult.conditions)
         .skip(offset)
         .limit(limit)
-      return query.exec()
+        .lean()
+        .exec()
     }
   }
 }
