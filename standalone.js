@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import express from 'express'
 import { CourseApiServer } from './index'
 
@@ -12,6 +11,7 @@ const app = express()
 server.applyMiddleware({ app }) // app is from an existing express app
 
 app.listen({ port }, () => {
+  // eslint-disable-next-line no-console
   console.log(
     `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
   )

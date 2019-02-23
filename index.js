@@ -5,7 +5,9 @@ import mongoose from 'mongoose'
 import cachegoose from 'cachegoose'
 
 // DEBUG
-mongoose.set('debug', true)
+if (process.env.NODE_ENV !== 'production') {
+  mongoose.set('debug', true)
+}
 
 function connectMongo(mongoURI) {
   mongoose.connect(mongoURI, { useNewUrlParser: true })
