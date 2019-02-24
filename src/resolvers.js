@@ -10,14 +10,15 @@ import { stringToRegexQuery } from './mongoHelpers'
 const CACHE_TTL = 60
 
 const dateScalarType = new GraphQLScalarType({
-  // https://www.apollographql.com/docs/graphql-tools/scalars.html#Date-as-a-scalar
   name: 'Date',
   description: 'The Javascript native Date type.',
   parseValue(value) {
     return new Date(value) // value from the client
   },
   serialize(value) {
-    return value.toJSON() // value sent to the client
+    // value could be a string if lean() is used in mongoose query
+    const date = new Date(value)
+    return date.toJSON() // value sent to the client
   },
   parseLiteral(ast) {
     return new Date(ast.value)
