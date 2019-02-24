@@ -10,7 +10,8 @@ function connectMongo(mongoURI) {
 }
 
 // CourseApiServer returns an ApolloServer connected to the MongoDB database
-export function CourseApiServer(mongoURI, debug = false) {
+export function CourseApiServer(mongoURI, options = {}) {
+  const { debug, introspection, playground, tracing, engine } = options
   if (debug) {
     mongoose.set('debug', true)
   }
@@ -23,7 +24,9 @@ export function CourseApiServer(mongoURI, debug = false) {
     cacheControl: {
       defaultMaxAge: 240
     },
-    introspection: true,
-    playground: true,
+    introspection,
+    tracing,
+    playground,
+    engine
   })
 }

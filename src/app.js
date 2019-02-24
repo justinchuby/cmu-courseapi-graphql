@@ -1,14 +1,25 @@
 import express from 'express'
+import dotenv from 'dotenv'
 import { CourseApiServer } from './index'
 
-const dbName = process.env.DB_NAME || 'courseapi'
-const mongoUri = process.env.MONGO_URI || `mongodb+srv://test-a:nebku0-hYpqeq-qagmuh@cluster0-ydk8h.mongodb.net/${dbName}?retryWrites=true`
-const port = process.env.PORT || 4000
+dotenv.config()
 
+const mongoUri = process.env.MONGO_URI
+const port = process.env.PORT
+const engineApiKey = process.env.ENGINE_API_KEY
 // DEBUG
-const DEBUG = process.env.NODE_ENV !== 'production'
+const debug = process.env.NODE_ENV !== 'production'
 
-const server = new CourseApiServer(mongoUri, DEBUG)
+const server = new CourseApiServer(mongoUri, {
+  debug,
+  introspection: true,
+  tracing: true,
+  playground: true,
+  engine: {
+    apiKey: engineApiKey
+  }
+})
+
 const app = express()
 
 server.applyMiddleware({ app }) // app is from an existing express app
