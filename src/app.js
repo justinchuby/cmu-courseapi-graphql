@@ -5,6 +5,7 @@ import { CourseApiServer } from './index'
 dotenv.config()
 
 const mongoUri = `${process.env.MONGO_URI}/${process.env.DB_NAME}?retryWrites=true`
+console.log(mongoUri)
 const port = process.env.PORT
 const engineApiKey = process.env.ENGINE_API_KEY
 // DEBUG
