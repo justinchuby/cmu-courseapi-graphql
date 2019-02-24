@@ -1,14 +1,15 @@
 import express from 'express'
-import dotenv from 'dotenv'
 import { CourseApiServer } from './index'
 
-dotenv.config()
+// DEBUG
+const debug = process.env.NODE_ENV !== 'production'
+if (debug) {
+  require('dotenv').config()
+}
 
 const mongoUri = `${process.env.MONGO_URI}/${process.env.DB_NAME}?retryWrites=true`
 const port = process.env.PORT
 const engineApiKey = process.env.ENGINE_API_KEY
-// DEBUG
-const debug = process.env.NODE_ENV !== 'production'
 
 const server = new CourseApiServer(mongoUri, {
   debug,
