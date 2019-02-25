@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import { CourseApiServer } from './index'
 
 // DEBUG
@@ -23,6 +24,7 @@ const server = new CourseApiServer(mongoUri, {
 
 const app = express()
 
+app.use(cors())
 server.applyMiddleware({ app }) // app is from an existing express app
 
 app.listen({ port }, () => {
