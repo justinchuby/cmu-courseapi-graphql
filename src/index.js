@@ -4,23 +4,21 @@ import { resolvers } from './resolvers'
 import mongoose from 'mongoose'
 import cachegoose from 'cachegoose'
 
-function connectMongo(mongoURI) {
-  mongoose.connect(mongoURI, { useNewUrlParser: true })
+function connectMongo(mongoUri) {
+  mongoose.connect(mongoUri, { useNewUrlParser: true })
   cachegoose(mongoose)
 }
 
 // CourseApiServer returns an ApolloServer connected to the MongoDB database
-export function CourseApiServer(mongoURI, options = {}) {
+export function CourseApiServer(mongoUri, options = {}) {
   const { debug, introspection, playground, tracing, engine } = options
   if (debug) {
     mongoose.set('debug', true)
   }
+  connectMongo(mongoUri)
   return new ApolloServer({
     typeDefs,
     resolvers,
-    context: async () => ({
-      mongo: await connectMongo(mongoURI)
-    }),
     cacheControl: {
       defaultMaxAge: 240
     },
